@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 # Load environment variables
 load_dotenv()
 
-USE_EXAMPLE_DATA = False
+USE_EXAMPLE_DATA = True
 
 # columns to show
 columns_to_show_in_table = [ 'WBID', 'geneName', 'stage',
@@ -98,11 +98,16 @@ styles = {
 
 def create_figure(df_filtered, stage):
     """Create MA plot figure for a given stage"""
-    stage_titles = {
-        'embryo': 'embryo',
-        'L1': 'L1 larvae',
-        'L3': 'L3 larvae'
-    }
+    if USE_EXAMPLE_DATA:
+        stage_titles = {
+            'embryo': 'embryo',
+        }
+    else:
+        stage_titles = {
+            'embryo': 'embryo',
+            'L1': 'L1 larvae',
+            'L3': 'L3 larvae'
+        }
     title = f"MA plot of ELT-2-GFP enriched sorted cells in the {stage_titles.get(stage, stage)}"
 
     # Define plot order: not significant first (bottom), then enriched, equal, depleted (top)
@@ -198,6 +203,18 @@ def update_figure(selected_stage, n_clicks, relayout_data):
 
     return fig
 
+# Define stage dropdown options based on data source
+if USE_EXAMPLE_DATA:
+    stage_options = [
+        {'label': 'Embryo', 'value': 'embryo'}
+    ]
+else:
+    stage_options = [
+        {'label': 'Embryo', 'value': 'embryo'},
+        {'label': 'L1 Larvae', 'value': 'L1'},
+        {'label': 'L3 Larvae', 'value': 'L3'}
+    ]
+
 app.layout = html.Div([
     html.H1(children='Interactive MA-plot for RNA-seq from Williams et al. 2023'),
     html.Div([
@@ -212,13 +229,10 @@ app.layout = html.Div([
             html.Label("Select developmental stage: ", style={'fontWeight': 'bold', 'marginRight': '10px'}),
             dcc.Dropdown(
                 id='stage-dropdown',
-                options=[
-                    {'label': 'Embryo', 'value': 'embryo'},
-                    {'label': 'L1 Larvae', 'value': 'L1'},
-                    {'label': 'L3 Larvae', 'value': 'L3'}
-                ],
+                options=stage_options,
                 value='embryo',  # default value
                 clearable=False,
+                searchable=False,
                 style={'width': '200px', 'display': 'inline-block', 'marginRight': '20px'}
             ),
             html.Button('Clear Selection', id='clear-button', n_clicks=0,
